@@ -19,6 +19,7 @@ package com.molgenie.smiles2concepts;
 import com.molgenie.assignment.AssignCompounds;
 import com.molgenie.assignment.AssignCompounds.AssignmentParameters;
 import com.molgenie.assignment.OntologyLoader.OntologyData;
+import com.molgenie.assignment.SdfLoader;
 import com.molgenie.smiles2concepts.config.*;
 import com.molgenie.smiles2concepts.models.*;
 import com.molgenie.smiles2concepts.models.common.ClassificationResult;
@@ -27,6 +28,8 @@ import com.molgenie.smiles2concepts.services.IService;
 
 import io.javalin.Javalin;
 import java.io.IOException;
+import java.util.HashMap;
+
 import org.int4.dirk.api.InstanceResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,19 +54,20 @@ public class Main {
 		}
 	}
 
-	private static void executeCommand(String[] args, InstanceResolver resolver, AppProperties settings) {
+	private static void executeCommand(String[] args, InstanceResolver resolver, AppProperties settings) throws IOException {
 		//When running as command line app, adjust logging
 		System.setProperty("logging.file.name", ""); // Disable file logging
 		ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
 		root.setLevel(ch.qos.logback.classic.Level.ERROR);
-		
+
 		switch (args[0]) {
 			case "-h", "--help" -> {
 				System.out.println("Usage: java -jar smiles2concepts.jar [options]");
 				System.out.println("Options:");
-				System.out.println("  -h, --help     Show this help message");
-				System.out.println("  -i <smiles> 	 Process smiles");
-				System.out.println("  <NO OPTIONS>   Run the API server and wait for requests");
+				System.out.println("  -h, --help     	Show this help message");
+				System.out.println("  -i <smiles> 	 	Process single smiles");
+				System.out.println("  -sdf <filename>  	Process SDF file");
+				System.out.println("  <NO OPTIONS>   	Run the API server and wait for requests");
 				System.exit(0);
 			}
 			case "-i" -> {
@@ -97,6 +101,7 @@ public class Main {
 					
 					StringBuilder sB = new StringBuilder();
 					sB.append("{");
+					sB.append("\"id\": \""+result.smiles()+"\", ");
 					sB.append("\"smiles\": \""+result.smiles()+"\", ");
 					sB.append("\"classifier\": \""+result.classifier()+"\", ");
 					sB.append("\"classifications\": [ ");
@@ -111,6 +116,54 @@ public class Main {
 					
 				} catch (Exception e) {
 					log.error("Error processing smiles: " + smiles, e);
+					System.err.println("Error processing smiles: " + e.getMessage());
+					System.exit(1);
+				}
+				System.exit(0);
+			}
+			case "-sdf" -> {
+				if (args.length < 2) {
+					System.out.println("Error: Missing input sdf");
+					System.exit(1);
+				}
+				String sdfFile = args[1];
+				HashMap<String,String> molMap = SdfLoader.readSDF( args[1] );
+				System.out.println("converted SDF to smiles input...");
+				
+				try {
+					var service = resolver.getInstance( IService.class );
+					StringBuilder sB = new StringBuilder();
+					
+					AssignCompounds.AssignmentParameters parameters = new AssignmentParameters();
+					parameters.setOntologyFilename(settings.ontologyFilename() );
+					parameters.setModule( settings.module() );
+					
+					OntologyData oData = new OntologyData();
+					oData = AssignCompounds.loadOntology( parameters );
+					int count = 0;
+					for ( String name : molMap.keySet() ) {
+						String smiles = molMap.get(name);
+						SmilesRequest request = new SmilesRequest();
+						request.setSmiles(smiles);
+						count++;
+						//if ( count%100 == 0 ) System.out.println(count);
+						sB.append("{");
+						//sB.append("\"classifier\": \"MolGenie Ambit/CDK/OpenChemLib Classifyer\", ");
+						ClassificationResult result = service.performClassification(request, oData);
+						SmilesResponse sr = result.smilesResponse();
+						sB.append("\"cid\": \""+name+"\", ");
+						sB.append("\"smiles\": \""+result.smiles()+"\", ");
+						sB.append("\"classifications\": [ ");
+						for ( int i=0; i<sr.classifications().size();i++) {
+							String classID = sr.classifications().get(i).getClassID();
+							String className = sr.classifications().get(i).getClassName();
+							if ( i==sr.classifications().size()-1 ) sB.append("{ \"classID\": \""+classID+"\", \"className\": \""+className+"\" }");
+							else sB.append("{ \"classID\": \""+classID+"\", \"className\": \""+className+"\" }, ");
+						}
+						sB.append("]}\n");
+						System.out.println(sB);
+					}
+				} catch (Exception e) {
 					System.err.println("Error processing smiles: " + e.getMessage());
 					System.exit(1);
 				}
