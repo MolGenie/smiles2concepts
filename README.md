@@ -1,7 +1,7 @@
 # Smiles2concepts
 This software provides a classification service for small organic molecules.
 
-The open access CDK/Ambit and OpenChemLib library was used for compound structure classification based on a MolGenie Organic Chemistry Ontology (MOCO) in the OBO 1.2 format. Please note that most ontology editors (like OBOEdit or Protégé) are not able to read this format in full extent. MOCO contains 114965 concept nodes, of which 106487 are leaf nodes. 2497 nodes contain SMARTS definitions, 104186 nodes contain ID-Codes that are used to classify the compound structure.
+The open access CDK/Ambit and OpenChemLib library was used for compound structure classification based on a MolGenie Organic Chemistry Ontology (MOCO) in the OBO 1.2 format. Please note that most ontology editors (like OBOEdit or Protégé) are not able to read this format in full extent. MOCO contains 114965 concept nodes, of which 106487 are leaf nodes. 2497 nodes contain SMARTS definitions, 104186 nodes contain ID-Codes that are used to classify the compound ring system structure(s).
 
 The output is given as a JSON formatted response using the input SMILES string and the detected chemical classes for the given input molecule.
 
@@ -40,14 +40,19 @@ E.g. using the ./smiles2conceptsWithCurl.sh in the projects /bin directory with 
 
 ## Java program
 E.g. using the smiles2concepts.jar in the projects upper directory:
-`java -jar bin/smiles2concepts.jar -i c1cccc1`  
+`java -jar target/smiles2concepts.jar -i "c1cccc1"`  
+
 please note that this is inefficient as the ontology will be loaded each time the program is called.
 
 As an example, the smiles c1ccccc1 for benzene shall return: 
 `{ "smiles": "c1ccccc1", "classifier": "MolGenie Ambit+OpenChemLib Classifier v1.0", "classifications": [ { "classID": "MGN110000003", "name": "n-cyclic compounds" }, { "classID": "MGN100001453", "name": "scaffolds" }, { "classID": "MGN100003363", "name": "ring systems" }, { "classID": "MGN310000001", "name": "benzene" }, { "classID": "MGN100000604", "name": "aromatic compounds" }, { "classID": "MGN100000147", "name": "cyclic compounds" }, { "classID": "MGN100000302", "name": "organic compounds" }, { "classID": "MGN200000011", "name": "monocyclic compounds" } ] }`
 
-The idcode is a unique identifier for small molecules, different to the InChI, it allows to reproduce the original structure.
+It is also possible to process SDF files or gzipped SDF files, the output is to stdout , which can be redirected to a suitable result file:
+`java -jar target/smiles2concepts.jar -sdf test.sdf.gz > test.json`
 
+The output is in the form of JSON-LD lines, including also the SDFs compound identifier. 
+`{"cid": "131000163", "smiles": "O[C@@H](CC1)C#CCCCCC#C[C@H]1O", "classifications": [ { "classID": "MGN100000585", "className": "oxygen containing functional groups" }, { "classID": "MGN110000001", "className": "macrocyclic ring systems" }, { "classID": "MGN100001926", "className": "alcohols" }, { "classID": "MGN100003154", "className": "diols" }, { "classID": "MGN100000096", "className": "chiral compounds" }, { "classID": "MGN100003043", "className": "secondary alcohols" }, { "classID": "MGN100003160", "className": "polyalcohols" }, { "classID": "MGN100000147", "className": "cyclic compounds" }, { "classID": "MGN100000113", "className": "aliphatic compounds" }, { "classID": "MGN100000302", "className": "organic compounds" }]}`
+    
 If an error occurred, response takes the following form: 
 `{ "processState" : { "errorMsg" : "ERROR_MESSAGE", "errorCode" : ERROR_CODE, "processed" : false } }` 
 
