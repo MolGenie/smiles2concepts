@@ -9,18 +9,17 @@ Smiles2structure is designed as a client-server solution. It can run either loca
 
 # How to build
 Create the Smiles2concepts web service as Maven project. The Maven command 
-`mvn package assembly:single
-
-creates the target/smiles2concepts-distribution.tar.gz archive which contains the application, resources, configurations and shell-scripts to run the application.
+`mvn package assembly:single`
+creates the target/smiles2concepts-distribution.tar.gz archive which contains the application, resources, configurations and shell-scripts to run the application. It also creates the smiles2concepts.jar that could be used to run the program in command line mode. Please move it to the bin directory after compilation.
 
 # How to use
 Extract molecule2concepts-distribution.tar.gz.
 
-smiles2concepts/bin contains executables to run: startSmiles2concepts.sh starts application as a server 
+smiles2concepts/bin contains executables to run: ./startSmiles2concepts.sh starts application as a server 
 
-stopSmiles2concepts.sh stops running the server 
+./stopSmiles2concepts.sh stops running the server 
 
-smiles2conceptsWithCurl.sh executes requests on running server smiles2concepts.sh run the application to execute single action
+./smiles2conceptsWithCurl.sh executes requests on running server smiles2concepts.sh run the application to execute single action
 
 smiles2concepts/config contains the configuration of the application
 After service starts up, the following folders appear: /bin /service /logs
@@ -40,7 +39,7 @@ E.g. using the ./smiles2conceptsWithCurl.sh in the projects /bin directory with 
 
 ## Java program
 E.g. using the smiles2concepts.jar in the projects upper directory:
-`java -jar target/smiles2concepts.jar -i "c1cccc1"`  
+`java -jar bin/smiles2concepts.jar -i "c1cccc1"`  
 
 please note that this is inefficient as the ontology will be loaded each time the program is called.
 
@@ -48,10 +47,10 @@ As an example, the smiles c1ccccc1 for benzene shall return:
 `{ "smiles": "c1ccccc1", "classifier": "MolGenie Ambit+OpenChemLib Classifier v1.0", "classifications": [ { "classID": "MGN110000003", "name": "n-cyclic compounds" }, { "classID": "MGN100001453", "name": "scaffolds" }, { "classID": "MGN100003363", "name": "ring systems" }, { "classID": "MGN310000001", "name": "benzene" }, { "classID": "MGN100000604", "name": "aromatic compounds" }, { "classID": "MGN100000147", "name": "cyclic compounds" }, { "classID": "MGN100000302", "name": "organic compounds" }, { "classID": "MGN200000011", "name": "monocyclic compounds" } ] }`
 
 It is also possible to process SDF files or gzipped SDF files, the output is to stdout , which can be redirected to a suitable result file:
-`java -jar target/smiles2concepts.jar -sdf test.sdf.gz > test.json`
+`java -jar bin/smiles2concepts.jar -sdf test.sdf.gz > test.json`
 
 The output is in the form of JSON-LD lines, including also the SDFs compound identifier. 
-`{"cid": "131000163", "smiles": "O[C@@H](CC1)C#CCCCCC#C[C@H]1O", "classifications": [ { "classID": "MGN100000585", "className": "oxygen containing functional groups" }, { "classID": "MGN110000001", "className": "macrocyclic ring systems" }, { "classID": "MGN100001926", "className": "alcohols" }, { "classID": "MGN100003154", "className": "diols" }, { "classID": "MGN100000096", "className": "chiral compounds" }, { "classID": "MGN100003043", "className": "secondary alcohols" }, { "classID": "MGN100003160", "className": "polyalcohols" }, { "classID": "MGN100000147", "className": "cyclic compounds" }, { "classID": "MGN100000113", "className": "aliphatic compounds" }, { "classID": "MGN100000302", "className": "organic compounds" }]}`
+`{"cid": "131000303", "smiles": "C[C@@H](C(N(CC1)Cc2c1nc[nH]2)=O)N", "classifications": [ { "classID": "MGN100001300", "className": "primary amines" }, { "classID": "MGN100003363", "className": "ring systems" }, { "classID": "MGN100002990", "className": "alkyl primary amines" }, { "classID": "MGN100003042", "className": "tertiary amides" }, { "classID": "MGN100000173", "className": "heteroaromatic compounds" }, { "classID": "MGN100000096", "className": "chiral compounds" }, { "classID": "MGN300000000", "className": "plain ring systems" }, { "classID": "MGN100000604", "className": "aromatic compounds" }, { "classID": "MGN100000147", "className": "cyclic compounds" }, { "classID": "MGN100002621", "className": "alanine derivatives" }, { "classID": "MGN100000302", "className": "organic compounds" }, { "classID": "MGN100001012", "className": "nitrogen containing functional groups" }, { "classID": "MGN300000005", "className": "ringset:5,6,9" }, { "classID": "MGN110000003", "className": "n-cyclic compounds" }, { "classID": "MGN210000003", "className": "3-membered ring systems" }, { "classID": "MGN100000585", "className": "oxygen containing functional groups" }, { "classID": "MGN100001453", "className": "scaffolds" }, { "classID": "MGN100001791", "className": "alpha-amino acid derivatives" }, { "classID": "MGN100000558", "className": "carbonyl groups" }, { "classID": "MGN100000614", "className": "amides" }, { "classID": "MGN310000491", "className": "3H,4H,5H,6H,7H-imidazo[4,5-c]pyridine" }, { "classID": "MGN200000012", "className": "bicyclic compounds" }, { "classID": "MGN100003006", "className": "polyamines" }, { "classID": "MGN100002974", "className": "L-alpha-amino acid derivatives" }, { "classID": "MGN100001006", "className": "amines" }]}`
     
 If an error occurred, response takes the following form: 
 `{ "processState" : { "errorMsg" : "ERROR_MESSAGE", "errorCode" : ERROR_CODE, "processed" : false } }` 
