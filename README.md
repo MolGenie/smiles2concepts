@@ -5,7 +5,7 @@ The open access CDK/Ambit and OpenChemLib library was used for compound structur
 
 The output is given as a JSON formatted response using the input SMILES string and the detected chemical classes for the given input molecule.
 
-Molecule2structure is designed as a client-server solution. It can run either locally on a single machine or on a server that is accessible within a network.
+Smiles2structure is designed as a client-server solution. It can run either locally on a single machine or on a server that is accessible within a network.
 
 # How to build
 Create the Smiles2concepts web service as Maven project. The Maven command 
